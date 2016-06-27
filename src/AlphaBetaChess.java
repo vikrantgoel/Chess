@@ -307,7 +307,7 @@ public class AlphaBetaChess {
 		for(int j = -2; j <= 2; j++){
 			for(int k = -2; k <= 2; k++){
 
-				//so that it only 2.5 spaces diagonally
+				//so that it only moves 2.5 spaces diagonally
 				if(!(j!=k && j!=(-1)*k && j!=0 && k!=0))
 					continue;
 
