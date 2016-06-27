@@ -1,7 +1,5 @@
-import javax.swing.JFrame;
-
 public class AlphaBetaChess {
-	
+
 	/**
 	 * Capitals are white, others black
 	 * P/p = pawn
@@ -23,43 +21,118 @@ public class AlphaBetaChess {
 			{'R', 'K', 'B', 'Q', 'A', 'B', 'K', 'R'}
 	};
 	private static int kingPositionC = 60, kingPositionL = 4;
-	
+
 	/**
 	 * x1, y1, x2, y2, capturedPiece
 	 * @return
 	 */
 	public static String possibleMoves(){
 		StringBuilder list = new StringBuilder();
-		
+		String tempMoves = "";
 		for(int i = 0; i < 64; i++){
 			switch(chessBoard[i/8][i%8]){
-			case 'P' : list.append(possibleP(i));
+			case 'P' :
+				tempMoves = possibleP(i);
+				if(tempMoves.length() > 0)
+					list.append("P: Total moves: " + tempMoves.length()/5 + " : " + tempMoves +"\n");
 				break;
-			case 'K' : list.append(possibleK(i));
+			case 'K' :
+				tempMoves = possibleK(i);
+				if(tempMoves.length() > 0)
+					list.append("K: Total moves: " + tempMoves.length()/5 + " : " + tempMoves +"\n");
 				break;
-			case 'R' : list.append(possibleR(i));
+			case 'R' :
+				tempMoves = possibleR(i);
+				if(tempMoves.length() > 0)
+					list.append("R: Total moves: " + tempMoves.length()/5 + " : " + tempMoves +"\n");
 				break;
-			case 'B' : list.append(possibleB(i));
+			case 'B' :
+				tempMoves = possibleB(i);
+				if(tempMoves.length() > 0)
+					list.append("B: Total moves: " + tempMoves.length()/5 + " : " + tempMoves +"\n");
 				break;
-			case 'A' : list.append(possibleA(i));
+			case 'A' :
+				tempMoves = possibleA(i);
+				if(tempMoves.length() > 0)
+					list.append("A: Total moves: " + tempMoves.length()/5 + " : " + tempMoves +"\n");
 				break;
-			case 'Q' : list.append(possibleQ(i));
+			case 'Q' :
+				tempMoves = possibleQ(i);
+				if(tempMoves.length() > 0)
+					list.append("Q: Total moves: " + tempMoves.length()/5 + " : " + tempMoves +"\n");
 				break;
 			default : continue;
 			}
 		}
 		return list.toString();
 	}
-	
+
 	private static String possibleB(int i) {
 		StringBuilder list = new StringBuilder();
-		
+
 		return list.toString();
 	}
 
 	private static String possibleQ(int i) {
 		StringBuilder list = new StringBuilder();
-		
+		char oldPiece;
+
+		int distance = 1;
+		int r = i/8, c = i%8;
+
+		//eight combinations for eight directions our queen can go to
+		for(int j = -1; j <= 1; j++){
+			for(int k = -1; k <= 1; k++){
+				
+				//for j=0 and k=0, we are basically not moving at all
+				if(j==0 && k==0)
+					continue;
+				
+				//for cases where we are going out of the board
+				try{
+					distance = 1;
+					while(chessBoard[r+distance*j][c+distance*k] == ' '){
+
+						//suppose we make the switch
+						oldPiece = chessBoard[r+distance*j][c+distance*k];
+						chessBoard[r+distance*j][c+distance*k] = chessBoard[r][c];
+						chessBoard[r][c] = ' ';
+
+						//if valid move record it
+						if(kingSafe()){
+							//valid move
+							list.append(String.valueOf(r) + String.valueOf(c) + String.valueOf(r+distance*j) 
+							+ String.valueOf(c+distance*k) + String.valueOf(oldPiece));
+						}
+
+						//switch it back to be able to calculate more moves
+						chessBoard[r][c] = chessBoard[r+distance*j][c+distance*k];
+						chessBoard[r+distance*j][c+distance*k] = oldPiece;
+
+						distance++;
+					}
+					if(Character.isLowerCase(chessBoard[r+distance*j][c+distance*k])){
+						
+						//suppose we make the switch
+						oldPiece = chessBoard[r+distance*j][c+distance*k];
+						chessBoard[r+distance*j][c+distance*k] = chessBoard[r][c];
+						chessBoard[r][c] = ' ';
+
+						//if valid move record it
+						if(kingSafe()){
+							//valid move
+							list.append(String.valueOf(r) + String.valueOf(c) + String.valueOf(r+distance*j) 
+							+ String.valueOf(c+distance*k) + String.valueOf(oldPiece));
+						}
+
+						//switch it back to be able to calculate more moves
+						chessBoard[r][c] = chessBoard[r+distance*j][c+distance*k];
+						chessBoard[r+distance*j][c+distance*k] = oldPiece;
+					}
+
+				}catch(Exception e){ }
+			}
+		}
 		return list.toString();
 	}
 
@@ -67,63 +140,71 @@ public class AlphaBetaChess {
 		StringBuilder list = new StringBuilder();
 		char oldPiece;
 		int r = i/8, c = i%8;
-		for (int j = 0; j < 9; j++){
-			if (j != 4){
+
+		//eight combinations for eight directions our queen can go to
+		for(int j = -1; j <= 1; j++){
+			for(int k = -1; k <= 1; k++){
 				
-				//for cases where king is on border of the board
-				if (((r-1) + (j/3) < 0) || ((c-1) + (j%3) < 0) || ((r-1) + (j/3) > 7) || ((c-1) + (j%3) > 7))
-					continue;
-				if (!Character.isUpperCase(chessBoard[(r-1) + (j/3)][(c-1) + (j%3)])){
-					oldPiece = chessBoard[(r-1) + (j/3)][(c-1) + (j%3)];
-					chessBoard[(r-1) + (j/3)][(c-1) + (j%3)] = chessBoard[r][c];
-					chessBoard[r][c] = ' ';
-					kingPositionC = 8*((r-1) + (j/3)) + ((c-1) + (j%3));
-					if(kingSafe()){
-						//valid move
-						list.append(String.valueOf(r) + String.valueOf(c) + String.valueOf(((r-1) + (j/3))) 
-						+ String.valueOf(((c-1) + (j%3))) + String.valueOf(oldPiece));
+				//for cases where we are going out of the board
+				try{
+					//we will not move on one of our own player
+					if (!Character.isUpperCase(chessBoard[r+j][c+k])){
+						//suppose we make the switch
+						oldPiece = chessBoard[r+j][c+k];
+						chessBoard[r+j][c+k] = chessBoard[r][c];
+						chessBoard[r][c] = ' ';
+						kingPositionC = 8*(r+j) + (c+k);
+
+						//if valid move record it
+						if(kingSafe()){
+							list.append(String.valueOf(r) + String.valueOf(c) + String.valueOf(r+j) 
+							+ String.valueOf(c+k) + String.valueOf(oldPiece));
+						}
+
+						//switch it back to be able to calculate more moves
+						chessBoard[r][c] = chessBoard[r+j][c+k];
+						chessBoard[r+j][c+k] = oldPiece;
+						kingPositionC = 8*r + c;
 					}
-					chessBoard[r][c] = chessBoard[(r-1) + (j/3)][(c-1) + (j%3)];
-					chessBoard[(r-1) + (j/3)][(c-1) + (j%3)] = oldPiece;
-					kingPositionC = 8*r + c;
-				}
+				}catch(Exception e){ }
 			}
 		}
+		
 		//TODO add castling logic
 		return list.toString();
 	}
 
 	private static String possibleR(int i) {
 		StringBuilder list = new StringBuilder();
-		
+
 		return list.toString();
 	}
 
 	private static String possibleK(int i) {
 		StringBuilder list = new StringBuilder();
-		
+
 		return list.toString();
 	}
 
 	private static String possibleP(int i) {
 		StringBuilder list = new StringBuilder();
-		
+
 		return list.toString();
 	}
 
 	private static boolean kingSafe(){
 		return true;
 	} 
-	
+
 	public static void main(String[] args) {
-//		UserInterface ui = new UserInterface();
-//		
-//		JFrame f = new JFrame("Chess");
-//		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//		f.add(ui);
-//		f.setSize(500, 500);
-//		f.setVisible(true);
-		
+		//		UserInterface ui = new UserInterface();
+		//		
+		//		JFrame f = new JFrame("Chess");
+		//		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		//		f.add(ui);
+		//		f.setSize(500, 500);
+		//		f.setVisible(true);
+
 		System.out.println(possibleMoves());
 	}
 }
