@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class AlphaBetaChess {
 
 	/**
@@ -11,24 +13,24 @@ public class AlphaBetaChess {
 	 * 
 	 */
 	static Character chessBoard[][] = {
-			{'r', 'k', 'b', 'q', 'a', 'b', 'k', 'r'},
-			{'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
+			{' ', 'k', 'b', 'q', 'a', 'b', 'k', 'r'},
+			{'P', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
 			{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
 			{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
 			{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-			{' ', ' ', ' ', ' ', 'b', 'b', ' ', ' '},
-			{'P', 'P', 'P', 'b', 'b', 'b', 'P', 'P'},
+			{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+			{'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
 			{'R', 'K', 'B', 'Q', 'A', 'B', 'K', 'R'}
 	};
 	static Character chessBoardClone[][] = chessBoard.clone();
-	
+	private static int kingPositionC = 0, kingPositionL = 0;
+
 	private static void printChessBoard(){
+		System.out.println();
 		for(int i=0; i<8; i++){
-			for(int j=0; j<8; j++){
-				System.out.print(chessBoard[i][j]+" ");
-			}
-			System.out.println();
+			System.out.println(Arrays.toString(chessBoard[i]));
 		}
+		System.out.println();
 	}
 	private static boolean chessBoardChange(){
 		for(int i=0; i<8; i++){
@@ -39,11 +41,10 @@ public class AlphaBetaChess {
 		}
 		return false;
 	}
-	
-	private static int kingPositionC = 60, kingPositionL = 4;
 
 	/**
 	 * x1, y1, x2, y2, capturedPiece
+	 * y1, y2, capturedPiece, newPiece, P/p (for when Pawn reaches the other side of board)
 	 * @return
 	 * @throws Exception 
 	 */
@@ -230,7 +231,6 @@ public class AlphaBetaChess {
 				}catch(Exception e){ }
 			}
 		}
-		printChessBoard();
 		return list.toString();
 	}
 
@@ -385,6 +385,9 @@ public class AlphaBetaChess {
 
 		int r = i/8, c = i%8;
 
+		// when we reach the other side of board 
+		char[] promo = {'Q', 'B', 'R', 'K'};
+
 		//when we are eliminating an enemy
 		for(int j = -1 ; j <= 1; j += 2){
 			try{
@@ -398,8 +401,19 @@ public class AlphaBetaChess {
 					//if valid move record it
 					if(kingSafe()){
 						//valid move
-						list.append(String.valueOf(r) + String.valueOf(c) + String.valueOf(r-1) 
-						+ String.valueOf(c+j) + String.valueOf(oldPiece));
+
+						if(r>1){
+							// not promo 
+							list.append(String.valueOf(r) + String.valueOf(c) + String.valueOf(r-1) 
+							+ String.valueOf(c+j) + String.valueOf(oldPiece));
+						}
+						else{
+							// promo
+							for(int k = 0; k < promo.length; k++){
+								list.append(String.valueOf(c) + String.valueOf(c+j) + String.valueOf(oldPiece) 
+								+ String.valueOf(promo[k]) + "P");
+							}
+						}
 					}
 
 					//switch it back to be able to calculate more moves
@@ -410,8 +424,8 @@ public class AlphaBetaChess {
 		}
 
 		//when we are moving straight ahead
-		boolean failure = false;
-		for(int j=-1; j>=-2 && !failure; j--){
+		boolean canMoveTwoPlaces = false;
+		for(int j=-1; j>=-2 && !canMoveTwoPlaces; j--){
 			try{
 				if(chessBoard[r+j][c] == ' '){
 
@@ -423,16 +437,31 @@ public class AlphaBetaChess {
 					//if valid move record it
 					if(kingSafe()){
 						//valid move
-						list.append(String.valueOf(r) + String.valueOf(c) + String.valueOf(r+j) 
-						+ String.valueOf(c) + String.valueOf(oldPiece));
+
+						if(r>1){
+							// not promo
+							list.append(String.valueOf(r) + String.valueOf(c) + String.valueOf(r+j) 
+							+ String.valueOf(c) + String.valueOf(oldPiece));
+						}
+						else{
+							// promo
+							for(int k = 0; k < promo.length; k++){
+								list.append(String.valueOf(c) + String.valueOf(c) + String.valueOf(oldPiece) 
+								+ String.valueOf(promo[k]) + "P");
+							}
+						}
 					}
 
 					//switch it back to be able to calculate more moves
 					chessBoard[r][c] = chessBoard[r+j][c];
 					chessBoard[r+j][c] = oldPiece;
+
+					// we move two spaces only for row 6
+					if(r!=6)
+						canMoveTwoPlaces = true;
 				}
 				else{
-					failure = true;
+					canMoveTwoPlaces = true;
 				}
 			} catch(Exception e){ }
 		}
@@ -489,7 +518,7 @@ public class AlphaBetaChess {
 				}catch(Exception e){ }
 			}
 		}
-		
+
 		// pawn
 		// only for diagonal moves
 		for(int j = -1 ; j <= 1; j += 2){
@@ -499,13 +528,67 @@ public class AlphaBetaChess {
 				}
 			} catch(Exception e){ }
 		}
-		
+
 		//king
-		
+		for(int j = -1; j <= 1; j++){
+			for(int k = -1; k <= 1; k++){
+				//for cases where we are going out of the board
+				try{
+					if (chessBoard[r+j][c+k]=='a')
+						return false;
+				}catch(Exception e){ }
+			}
+		}
 		return true;
 	} 
 
+	public static void makeMoveC(String move){
+		if(move.charAt(4)!='P'){
+			// x1, y1, x2, y2, capturedPiece
+			int x1 = Character.getNumericValue(move.charAt(0));
+			int y1 = Character.getNumericValue(move.charAt(1));
+			int x2 = Character.getNumericValue(move.charAt(2));
+			int y2 = Character.getNumericValue(move.charAt(3));
+			chessBoard[x2][y2] = chessBoard[x1][y1];
+			chessBoard[x1][y1] = ' ';
+		}
+		else {
+			// y1, y2, capturedPiece, newPiece, P (for when Pawn reaches the other side of board)
+			int y1 = Character.getNumericValue(move.charAt(0));
+			int y2 = Character.getNumericValue(move.charAt(1));
+			char newPiece = move.charAt(3);
+			chessBoard[0][y2] = newPiece;
+			chessBoard[1][y1] = ' ';
+		}
+	}
+	public static void undoMoveC(String move){
+		if(move.charAt(4)!='P'){
+			// x1, y1, x2, y2, capturedPiece
+			int x1 = Character.getNumericValue(move.charAt(0));
+			int y1 = Character.getNumericValue(move.charAt(1));
+			int x2 = Character.getNumericValue(move.charAt(2));
+			int y2 = Character.getNumericValue(move.charAt(3));
+			char capturedPiece = move.charAt(4); 
+			chessBoard[x1][y1] = chessBoard[x2][y2];
+			chessBoard[x2][y2] = capturedPiece;
+			
+		}
+		else {
+			// y1, y2, capturedPiece, newPiece, P/p (for when Pawn reaches the other side of board)
+			int y1 = Character.getNumericValue(move.charAt(0));
+			int y2 = Character.getNumericValue(move.charAt(1));
+			char capturedPiece = move.charAt(2);
+			chessBoard[1][y1] = 'P';
+			chessBoard[0][y2] = capturedPiece;
+			
+		}
+	}
+	
 	public static void main(String[] args) throws Exception {
+		while(chessBoard[kingPositionC/8][kingPositionC%8]!='A')
+			kingPositionC++;
+		while(chessBoard[kingPositionL/8][kingPositionL%8]!='a')
+			kingPositionL++;
 		//		UserInterface ui = new UserInterface();
 		//		
 		//		JFrame f = new JFrame("Chess");
@@ -513,9 +596,22 @@ public class AlphaBetaChess {
 		//		f.add(ui);
 		//		f.setSize(500, 500);
 		//		f.setVisible(true);
-
-//		printChessBoard();
-		String moves = possibleMoves();
+		String moves = "";
+		
+		printChessBoard();
+		moves = possibleMoves();
+		System.out.println("Total possible moves: " + moves.length()/5 + " : " + moves);
+		
+		makeMoveC("01kQP");
+		
+		printChessBoard();
+		moves = possibleMoves();
+		System.out.println("Total possible moves: " + moves.length()/5 + " : " + moves);
+		
+		undoMoveC("01kQP");
+		
+		printChessBoard();
+		moves = possibleMoves();
 		System.out.println("Total possible moves: " + moves.length()/5 + " : " + moves);
 	}
 }
