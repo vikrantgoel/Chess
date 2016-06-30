@@ -1,4 +1,5 @@
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class AlphaBetaChess {
 
@@ -13,8 +14,8 @@ public class AlphaBetaChess {
 	 * 
 	 */
 	static Character chessBoard[][] = {
-			{' ', 'k', 'b', 'q', 'a', 'b', 'k', 'r'},
-			{'P', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
+			{'r', 'k', 'b', 'q', 'a', 'b', 'k', 'r'},
+			{'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
 			{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
 			{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
 			{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
@@ -24,7 +25,8 @@ public class AlphaBetaChess {
 	};
 	static Character chessBoardClone[][] = chessBoard.clone();
 	private static int kingPositionC = 0, kingPositionL = 0;
-
+	private static int globalDepth = 4;
+	private static boolean testing = false;
 	private static void printChessBoard(){
 		System.out.println();
 		for(int i=0; i<8; i++){
@@ -542,7 +544,7 @@ public class AlphaBetaChess {
 		return true;
 	} 
 
-	public static void makeMoveC(String move){
+	public static void makeMove(String move){
 		if(move.charAt(4)!='P'){
 			// x1, y1, x2, y2, capturedPiece
 			int x1 = Character.getNumericValue(move.charAt(0));
@@ -561,7 +563,7 @@ public class AlphaBetaChess {
 			chessBoard[1][y1] = ' ';
 		}
 	}
-	public static void undoMoveC(String move){
+	public static void undoMove(String move){
 		if(move.charAt(4)!='P'){
 			// x1, y1, x2, y2, capturedPiece
 			int x1 = Character.getNumericValue(move.charAt(0));
@@ -571,7 +573,7 @@ public class AlphaBetaChess {
 			char capturedPiece = move.charAt(4); 
 			chessBoard[x1][y1] = chessBoard[x2][y2];
 			chessBoard[x2][y2] = capturedPiece;
-			
+
 		}
 		else {
 			// y1, y2, capturedPiece, newPiece, P/p (for when Pawn reaches the other side of board)
@@ -580,10 +582,102 @@ public class AlphaBetaChess {
 			char capturedPiece = move.charAt(2);
 			chessBoard[1][y1] = 'P';
 			chessBoard[0][y2] = capturedPiece;
-			
+
 		}
 	}
-	
+
+	private static int rating(){
+
+		// for testing
+		if (testing){
+			System.out.print("What is the score: ");
+			Scanner sc = new Scanner(System.in);
+			return sc.nextInt();
+		}
+		else
+			return 0;
+	}
+	private static void flipBoard(){
+		// TODO
+	}
+	private static String alphaBeta(int depth, int beta, int alpha, String move, int player, boolean test) throws Exception{
+
+		// for testing
+		testing = test;
+
+		// return in the form of 1234b#####
+		// 1234b is the move, ### is the score
+
+		String list = possibleMoves();
+
+		// for testing
+		if (testing)
+			list = "1";
+
+		if (depth == 0 || list.length() == 0){
+			// for testing
+			if(testing)
+				return move + rating();
+			else
+				return move + rating()*(player*2-1);
+		}
+
+		// for testing
+		if(testing){
+			list = "";
+			Scanner sc = new Scanner(System.in);
+			System.out.print("How many moves are there: ");
+			int temp = sc.nextInt();
+			for (int i = 0 ; i < temp; i++){
+				list += "1111b";
+			}
+		}
+
+
+		// TODO sort later
+
+		// either 0 or 1
+		player = 1-player;
+
+		for (int i = 0; i<list.length(); i += 5){
+			makeMove(list.substring(i, i+5));
+			flipBoard();
+			String returnString = alphaBeta(depth-1, beta, alpha, list.substring(i, i+5), player, test);
+			int value = Integer.valueOf(returnString.substring(5));
+			flipBoard();
+			undoMove(list.substring(i, i+5));
+
+			if(player == 0){
+				if (value <= beta){
+					beta = value;
+					if (depth == globalDepth){
+						move = returnString.substring(0, 5);
+					}
+				}
+			} else {
+				if (value > alpha){
+					alpha = value;
+					if (depth == globalDepth){
+						move = returnString.substring(0, 5);
+					}
+				}
+			}
+
+			// prune
+			if (alpha >= beta) {
+				if (player == 0)
+					return move + beta;
+				else
+					return move + alpha;
+			}
+		}
+
+		if (player == 0)
+			return move + beta;
+		else
+			return move + alpha;
+	}
+
 	public static void main(String[] args) throws Exception {
 		while(chessBoard[kingPositionC/8][kingPositionC%8]!='A')
 			kingPositionC++;
@@ -597,21 +691,11 @@ public class AlphaBetaChess {
 		//		f.setSize(500, 500);
 		//		f.setVisible(true);
 		String moves = "";
-		
+
 		printChessBoard();
 		moves = possibleMoves();
 		System.out.println("Total possible moves: " + moves.length()/5 + " : " + moves);
-		
-		makeMoveC("01kQP");
-		
-		printChessBoard();
-		moves = possibleMoves();
-		System.out.println("Total possible moves: " + moves.length()/5 + " : " + moves);
-		
-		undoMoveC("01kQP");
-		
-		printChessBoard();
-		moves = possibleMoves();
-		System.out.println("Total possible moves: " + moves.length()/5 + " : " + moves);
+
+		System.out.println(alphaBeta(globalDepth, Integer.MAX_VALUE, Integer.MIN_VALUE, "", 0, true));
 	}
 }
