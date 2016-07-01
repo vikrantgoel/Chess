@@ -1,6 +1,8 @@
 import java.util.Arrays;
 import java.util.Scanner;
 
+import javax.swing.JFrame;
+
 public class AlphaBetaChess {
 
 	/**
@@ -57,48 +59,48 @@ public class AlphaBetaChess {
 			switch(chessBoard[i/8][i%8]){
 			case 'P' :
 				tempMoves = possibleP(i);
-				if(tempMoves.length() > 0)
-					System.out.println("P: Total moves: " + tempMoves.length()/5 + " : " + tempMoves);
+//				if(tempMoves.length() > 0)
+//					System.out.println("P: Total moves: " + tempMoves.length()/5 + " : " + tempMoves);
 				list.append(tempMoves);
 				if(chessBoardChange())
 					throw new Exception();
 				break;
 			case 'K' :
 				tempMoves = possibleK(i);
-				if(tempMoves.length() > 0)
-					System.out.println("K: Total moves: " + tempMoves.length()/5 + " : " + tempMoves);
+//				if(tempMoves.length() > 0)
+//					System.out.println("K: Total moves: " + tempMoves.length()/5 + " : " + tempMoves);
 				list.append(tempMoves);
 				if(chessBoardChange())
 					throw new Exception();
 				break;
 			case 'R' :
 				tempMoves = possibleR(i);
-				if(tempMoves.length() > 0)
-					System.out.println("R: Total moves: " + tempMoves.length()/5 + " : " + tempMoves);
+//				if(tempMoves.length() > 0)
+//					System.out.println("R: Total moves: " + tempMoves.length()/5 + " : " + tempMoves);
 				list.append(tempMoves);
 				if(chessBoardChange())
 					throw new Exception();
 				break;
 			case 'B' :
 				tempMoves = possibleB(i);
-				if(tempMoves.length() > 0)
-					System.out.println("B: Total moves: " + tempMoves.length()/5 + " : " + tempMoves);
+//				if(tempMoves.length() > 0)
+//					System.out.println("B: Total moves: " + tempMoves.length()/5 + " : " + tempMoves);
 				list.append(tempMoves);
 				if(chessBoardChange())
 					throw new Exception();
 				break;
 			case 'A' :
 				tempMoves = possibleA(i);
-				if(tempMoves.length() > 0)
-					System.out.println("A: Total moves: " + tempMoves.length()/5 + " : " + tempMoves);
+//				if(tempMoves.length() > 0)
+//					System.out.println("A: Total moves: " + tempMoves.length()/5 + " : " + tempMoves);
 				list.append(tempMoves);
 				if(chessBoardChange())
 					throw new Exception();
 				break;
 			case 'Q' :
 				tempMoves = possibleQ(i);
-				if(tempMoves.length() > 0)
-					System.out.println("Q: Total moves: " + tempMoves.length()/5 + " : " + tempMoves);
+//				if(tempMoves.length() > 0)
+//					System.out.println("Q: Total moves: " + tempMoves.length()/5 + " : " + tempMoves);
 				list.append(tempMoves);
 				if(chessBoardChange())
 					throw new Exception();
@@ -553,6 +555,10 @@ public class AlphaBetaChess {
 			int y2 = Character.getNumericValue(move.charAt(3));
 			chessBoard[x2][y2] = chessBoard[x1][y1];
 			chessBoard[x1][y1] = ' ';
+
+			if(chessBoard[x2][y2] == 'A') {
+				kingPositionC = 8*x2 + y2;
+			}
 		}
 		else {
 			// y1, y2, capturedPiece, newPiece, P (for when Pawn reaches the other side of board)
@@ -574,6 +580,9 @@ public class AlphaBetaChess {
 			chessBoard[x1][y1] = chessBoard[x2][y2];
 			chessBoard[x2][y2] = capturedPiece;
 
+			if(chessBoard[x1][y1] == 'A') {
+				kingPositionC = 8*x1 + y1;
+			}
 		}
 		else {
 			// y1, y2, capturedPiece, newPiece, P/p (for when Pawn reaches the other side of board)
@@ -598,7 +607,27 @@ public class AlphaBetaChess {
 			return 0;
 	}
 	private static void flipBoard(){
-		// TODO
+		// flip board
+		char temp = ' ';
+		for(int i = 0; i < 32; i++ ){
+			temp = chessBoard[i/8][i%8];
+			chessBoard[i/8][i%8] = chessBoard[(63-i)/8][(63-i)%8];
+			chessBoard[(63-i)/8][(63-i)%8] = temp;
+			if(Character.isUpperCase(chessBoard[i/8][i%8]))
+				chessBoard[i/8][i%8] = Character.toLowerCase(chessBoard[i/8][i%8]);
+			else
+				chessBoard[i/8][i%8] = Character.toUpperCase(chessBoard[i/8][i%8]);
+			if(Character.isUpperCase(chessBoard[(63-i)/8][(63-i)%8]))
+				chessBoard[(63-i)/8][(63-i)%8] = Character.toLowerCase(chessBoard[(63-i)/8][(63-i)%8]);
+			else
+				chessBoard[(63-i)/8][(63-i)%8] = Character.toUpperCase(chessBoard[(63-i)/8][(63-i)%8]);
+		}
+
+		// swap kings
+		int tempKingPosition = kingPositionC;
+		kingPositionC = 63 - kingPositionL;
+		kingPositionL = 63 - tempKingPosition;
+
 	}
 	private static String alphaBeta(int depth, int beta, int alpha, String move, int player, boolean test) throws Exception{
 
@@ -647,6 +676,8 @@ public class AlphaBetaChess {
 			flipBoard();
 			undoMove(list.substring(i, i+5));
 
+			//			printChessBoard();
+
 			if(player == 0){
 				if (value <= beta){
 					beta = value;
@@ -683,19 +714,21 @@ public class AlphaBetaChess {
 			kingPositionC++;
 		while(chessBoard[kingPositionL/8][kingPositionL%8]!='a')
 			kingPositionL++;
-		//		UserInterface ui = new UserInterface();
-		//		
-		//		JFrame f = new JFrame("Chess");
-		//		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		//		f.add(ui);
-		//		f.setSize(500, 500);
-		//		f.setVisible(true);
-		String moves = "";
+		UserInterface ui = new UserInterface();
 
-		printChessBoard();
-		moves = possibleMoves();
-		System.out.println("Total possible moves: " + moves.length()/5 + " : " + moves);
+		JFrame f = new JFrame("Chess");
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		f.add(ui);
+		f.setSize(500, 500);
+		f.setVisible(true);
 
-		System.out.println(alphaBeta(globalDepth, Integer.MAX_VALUE, Integer.MIN_VALUE, "", 0, true));
+		//		String moves = "";
+		//		printChessBoard();
+		//		moves = possibleMoves();
+		//		System.out.println("Total possible moves: " + moves.length()/5 + " : " + moves);
+		//		System.out.println(alphaBeta(globalDepth, Integer.MAX_VALUE, Integer.MIN_VALUE, "", 0, false));
+//				makeMove(alphaBeta(globalDepth, Integer.MAX_VALUE, Integer.MIN_VALUE, "", 0, false));
+		//		System.out.println(alphaBeta(globalDepth, Integer.MAX_VALUE, Integer.MIN_VALUE, "", 0, false));
+		//		printChessBoard();
 	}
 }
