@@ -2,6 +2,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 public class AlphaBetaChess {
 
@@ -26,9 +27,10 @@ public class AlphaBetaChess {
 			{'R', 'K', 'B', 'Q', 'A', 'B', 'K', 'R'}
 	};
 	static Character chessBoardClone[][] = chessBoard.clone();
-	private static int kingPositionC = 0, kingPositionL = 0;
-	private static int globalDepth = 4;
-	private static boolean testing = false;
+	protected static int kingPositionC = 0, kingPositionL = 0;
+	private static int humanAsWhite = -1; // 1: True, 0: False 
+	protected static int globalDepth = 4;
+	protected static boolean testing = false;
 	private static void printChessBoard(){
 		System.out.println();
 		for(int i=0; i<8; i++){
@@ -473,7 +475,7 @@ public class AlphaBetaChess {
 		return list.toString();
 	}
 
-	private static boolean kingSafe(){
+	protected static boolean kingSafe(){
 
 		int r = kingPositionC/8, c = kingPositionC%8;
 		int distance = 1;
@@ -595,18 +597,7 @@ public class AlphaBetaChess {
 		}
 	}
 
-	private static int rating(){
-
-		// for testing
-		if (testing){
-			System.out.print("What is the score: ");
-			Scanner sc = new Scanner(System.in);
-			return sc.nextInt();
-		}
-		else
-			return 0;
-	}
-	private static void flipBoard(){
+	protected static void flipBoard(){
 		// flip board
 		char temp = ' ';
 		for(int i = 0; i < 32; i++ ){
@@ -629,7 +620,7 @@ public class AlphaBetaChess {
 		kingPositionL = 63 - tempKingPosition;
 
 	}
-	private static String alphaBeta(int depth, int beta, int alpha, String move, int player, boolean test) throws Exception{
+	protected static String alphaBeta(int depth, int beta, int alpha, String move, int player, boolean test) throws Exception{
 
 		// for testing
 		testing = test;
@@ -646,14 +637,15 @@ public class AlphaBetaChess {
 		if (depth == 0 || list.length() == 0){
 			// for testing
 			if(testing)
-				return move + rating();
+				return move + Rating.rating(-1, -1);
 			else
-				return move + rating()*(player*2-1);
+				return move + Rating.rating(list.length(), depth)*(player*2-1);
 		}
 
 		// for testing
 		if(testing){
 			list = "";
+			@SuppressWarnings("resource")
 			Scanner sc = new Scanner(System.in);
 			System.out.print("How many moves are there: ");
 			int temp = sc.nextInt();
@@ -721,7 +713,14 @@ public class AlphaBetaChess {
 		f.add(ui);
 		f.setSize(500, 500);
 		f.setVisible(true);
-
+		Object[] option = {"Computer", "Human"};
+		humanAsWhite = JOptionPane.showOptionDialog(null, "Who should play as White?", "Options", JOptionPane.YES_NO_OPTION, 
+				JOptionPane.QUESTION_MESSAGE, null, option, option[1]);
+		if(humanAsWhite == 0){
+			makeMove(alphaBeta(globalDepth, Integer.MAX_VALUE, Integer.MIN_VALUE, "", 0, false));
+			flipBoard();
+			f.repaint();
+		}
 		//		String moves = "";
 		//		printChessBoard();
 		//		moves = possibleMoves();

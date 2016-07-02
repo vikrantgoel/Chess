@@ -60,20 +60,11 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 				g.drawImage(chessPieceImage, (i%8)*squareSize, (i/8)*squareSize, (i%8+1)*squareSize, (i/8+1)*squareSize, j*64, k*64, (j+1)*64, (k+1)*64, this);
 			}
 		}
-
-		//		g.setColor(Color.BLUE);
-		//		g.fillRect(x, y, 20, 20);
-		//		g.setColor(Color.RED);
-		//		g.fillRect(20, 20, 200, 200);
-		//		g.drawString("Vikrant Goel", 250, 250);
-		//		
-		//		Image chessPieceImage = new ImageIcon("ChessPieces.png").getImage();
-		//		g.drawImage(chessPieceImage, x, y, x+64, y+64, 0+64, 0, 64+64, 64, this);
 	}
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
-
+		
 	}
 
 	@Override
@@ -118,13 +109,13 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 						// valid move
 						System.out.println(dragMove);
 						AlphaBetaChess.makeMove(dragMove);
-					}else{
-						System.out.println(dragMove);
-						System.out.println("invalid move");
+						AlphaBetaChess.flipBoard();
+						AlphaBetaChess.makeMove(AlphaBetaChess.alphaBeta(AlphaBetaChess.globalDepth, Integer.MAX_VALUE, Integer.MIN_VALUE, "", 0, false));
+						AlphaBetaChess.flipBoard();
+						repaint();
 					}
 				} catch (Exception e1) { }
 			}
-			repaint();
 		}
 	}
 
