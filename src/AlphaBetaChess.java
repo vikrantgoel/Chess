@@ -1,5 +1,7 @@
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -548,9 +550,26 @@ public class AlphaBetaChess {
 		return true;
 	} 
 
+	private static String sortMoves(String list){
+		
+		int[] score = new int[list.length()/5];
+		TreeMap<Integer, String> sortedScore = new TreeMap<>(Collections.reverseOrder());
+		for(int i=0; i<list.length(); i+=5){
+			makeMove(list.substring(i,i+5));
+			score[i/5] = Rating.rating(-1, 0);
+			sortedScore.put(score[i/5], list.substring(i,i+5));
+			undoMove(list.substring(i,i+5));
+		}
+		StringBuilder builder = new StringBuilder();
+		for(String s : sortedScore.values()) {
+		    builder.append(s);
+		}
+		
+		return builder.toString();
+	}
 	public static void makeMove(String move){
 		if(move.charAt(4)!='P'){
-			// x1, y1, x2, y2, capturedPiece
+			// x1, y1, x2, y2, capturedPiece 
 			int x1 = Character.getNumericValue(move.charAt(0));
 			int y1 = Character.getNumericValue(move.charAt(1));
 			int x2 = Character.getNumericValue(move.charAt(2));
@@ -630,6 +649,9 @@ public class AlphaBetaChess {
 
 		String list = possibleMoves();
 
+		// sort the list
+		list = sortMoves(list);
+
 		// for testing
 		if (testing)
 			list = "1";
@@ -653,9 +675,6 @@ public class AlphaBetaChess {
 				list += "1111b";
 			}
 		}
-
-
-		// TODO sort later
 
 		// either 0 or 1
 		player = 1-player;

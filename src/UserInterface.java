@@ -6,11 +6,12 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
 public class UserInterface extends JPanel implements MouseListener, MouseMotionListener{
-	
+	static StringBuilder movesDone = new StringBuilder();
 	static int mouseX, mouseY, newMouseX, newMouseY; 
 	static int squareSize = 32;
 	public void paintComponent(Graphics g){
@@ -64,7 +65,7 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		
+
 	}
 
 	@Override
@@ -102,17 +103,36 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 					// regular move
 					dragMove = "" + mouseY/squareSize + mouseX/squareSize + newMouseY/squareSize + newMouseX/squareSize + AlphaBetaChess.chessBoard[newMouseY/squareSize][newMouseX/squareSize];
 				}
-				
+
 				try {
 					String userPossibilities = AlphaBetaChess.possibleMoves();
 					if(userPossibilities.contains(dragMove)){
 						// valid move
-						System.out.println(dragMove);
+						System.out.println("Valid move: " + dragMove);
+						movesDone.append(dragMove);
 						AlphaBetaChess.makeMove(dragMove);
 						AlphaBetaChess.flipBoard();
-						AlphaBetaChess.makeMove(AlphaBetaChess.alphaBeta(AlphaBetaChess.globalDepth, Integer.MAX_VALUE, Integer.MIN_VALUE, "", 0, false));
+
+						String computerMove = AlphaBetaChess.alphaBeta(AlphaBetaChess.globalDepth, Integer.MAX_VALUE, Integer.MIN_VALUE, "", 0, false);
+						movesDone.append(computerMove);
+						AlphaBetaChess.makeMove(computerMove);
 						AlphaBetaChess.flipBoard();
 						repaint();
+
+						// check for checkmate or stalemate
+						if(AlphaBetaChess.possibleMoves().isEmpty()){
+							Object[] option = {"Ok"};
+							if(AlphaBetaChess.kingSafe()){
+								// stalemate
+								JOptionPane.showOptionDialog(null, "Stalemate! Its a draw.", "STALEMATE", JOptionPane.OK_OPTION, 
+										JOptionPane.QUESTION_MESSAGE, null, option, option[0]);
+							}else{
+								// checkmate
+								JOptionPane.showOptionDialog(null, "Checkmate! Although you played well.", "CHECKMATE", JOptionPane.OK_OPTION, 
+										JOptionPane.QUESTION_MESSAGE, null, option, option[0]);
+							}
+							System.exit(0);
+						}
 					}
 				} catch (Exception e1) { }
 			}
