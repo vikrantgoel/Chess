@@ -29,7 +29,7 @@ public class AlphaBetaChess {
 	};
 	static Character chessBoardClone[][] = chessBoard.clone();
 	protected static int kingPositionC = 0, kingPositionL = 0;
-	private static int humanAsWhite = -1; // 1: True, 0: False 
+	protected static int humanAsWhite = -1; // 1: True, 0: False 
 	protected static int globalDepth = 4;
 	static StringBuilder userMovesDone = new StringBuilder();
 	static StringBuilder computerMovesDone = new StringBuilder();
@@ -895,8 +895,8 @@ public class AlphaBetaChess {
 		if(humanAsWhite == 0){
 			makeMove(alphaBeta(globalDepth, Integer.MAX_VALUE, Integer.MIN_VALUE, "", 0), true);
 			flipBoard();
-			f.repaint();
 		}
+		f.repaint();
 
 		//				String moves = "";
 		//				printChessBoard();

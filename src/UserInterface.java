@@ -25,7 +25,13 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 			g.setColor(new Color(150, 50, 30));
 			g.fillRect(((i+1)%8-((i+1)/8)%2)*squareSize, ((i+1)/8)*squareSize, squareSize, squareSize);
 		}
-		Image chessPieceImage = new ImageIcon("ChessPieces.png").getImage();
+		Image chessPieceImage;
+		if(AlphaBetaChess.humanAsWhite == 0){
+			chessPieceImage = new ImageIcon("ChessPieces_inverted.png").getImage();
+		}else{
+			chessPieceImage = new ImageIcon("ChessPieces.png").getImage();
+		}
+		
 
 		for(int i = 0; i < 64; i++){
 			int j=-1, k=-1;
@@ -114,15 +120,10 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 						System.out.println("Valid move: " + dragMove);
 
 						AlphaBetaChess.makeMove(dragMove, false);
-						
 						AlphaBetaChess.flipBoard();
 
 						System.out.print("Computer thinking... ");
-						
-						AlphaBetaChess.printChessBoard();
 						String computerMove = AlphaBetaChess.alphaBeta(AlphaBetaChess.globalDepth, Integer.MAX_VALUE, Integer.MIN_VALUE, "", 0);
-						AlphaBetaChess.printChessBoard();
-						
 						System.out.println("Computer's move + rating: " + computerMove);
 						
 						// check for checkmate or stalemate of computer
