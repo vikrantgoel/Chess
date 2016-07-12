@@ -11,7 +11,7 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
 public class UserInterface extends JPanel implements MouseListener, MouseMotionListener{
-	static StringBuilder movesDone = new StringBuilder();
+	
 	static int mouseX, mouseY, newMouseX, newMouseY; 
 	static int squareSize = 32;
 	public void paintComponent(Graphics g){
@@ -99,28 +99,53 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 				if(newMouseY/squareSize == 0 && mouseY/squareSize == 1 && (AlphaBetaChess.chessBoard[mouseY/squareSize][mouseX/squareSize] == 'P')){
 					// pawn promotion
 					dragMove = "" + mouseX/squareSize + newMouseX/squareSize + AlphaBetaChess.chessBoard[newMouseY/squareSize][newMouseX/squareSize] + "QP";
-				} else {
+				} else if ((AlphaBetaChess.chessBoard[mouseY/squareSize][mouseX/squareSize] == 'A') && (newMouseY/squareSize == mouseY/squareSize) && (Math.abs(newMouseX/squareSize - mouseX/squareSize) == 2)){
+					// castle
+					dragMove = "" + mouseY/squareSize + mouseX/squareSize + newMouseY/squareSize + newMouseX/squareSize + "A";
+				}else {
 					// regular move
 					dragMove = "" + mouseY/squareSize + mouseX/squareSize + newMouseY/squareSize + newMouseX/squareSize + AlphaBetaChess.chessBoard[newMouseY/squareSize][newMouseX/squareSize];
 				}
 
 				try {
-					String userPossibilities = AlphaBetaChess.possibleMoves();
+					String userPossibilities = AlphaBetaChess.possibleMoves(false);
 					if(userPossibilities.contains(dragMove)){
 						// valid move
 						System.out.println("Valid move: " + dragMove);
-						movesDone.append(dragMove);
-						AlphaBetaChess.makeMove(dragMove);
+
+						AlphaBetaChess.makeMove(dragMove, false);
+						
 						AlphaBetaChess.flipBoard();
 
-						String computerMove = AlphaBetaChess.alphaBeta(AlphaBetaChess.globalDepth, Integer.MAX_VALUE, Integer.MIN_VALUE, "", 0, false);
-						movesDone.append(computerMove);
-						AlphaBetaChess.makeMove(computerMove);
+						System.out.print("Computer thinking... ");
+						
+						AlphaBetaChess.printChessBoard();
+						String computerMove = AlphaBetaChess.alphaBeta(AlphaBetaChess.globalDepth, Integer.MAX_VALUE, Integer.MIN_VALUE, "", 0);
+						AlphaBetaChess.printChessBoard();
+						
+						System.out.println("Computer's move + rating: " + computerMove);
+						
+						// check for checkmate or stalemate of computer
+						if(computerMove.isEmpty()){
+							Object[] option = {"Ok"};
+							if(AlphaBetaChess.kingSafe()){
+								// stalemate
+								JOptionPane.showOptionDialog(null, "Stalemate! Its a draw.", "STALEMATE", JOptionPane.OK_OPTION, 
+										JOptionPane.QUESTION_MESSAGE, null, option, option[0]);
+							}else{
+								// checkmate
+								JOptionPane.showOptionDialog(null, "Checkmate! You won!.", "CHECKMATE", JOptionPane.OK_OPTION, 
+										JOptionPane.QUESTION_MESSAGE, null, option, option[0]);
+							}
+							System.exit(0);
+						}
+						
+						AlphaBetaChess.makeMove(computerMove, true);
 						AlphaBetaChess.flipBoard();
 						repaint();
 
 						// check for checkmate or stalemate
-						if(AlphaBetaChess.possibleMoves().isEmpty()){
+						if(AlphaBetaChess.possibleMoves(false).isEmpty()){
 							Object[] option = {"Ok"};
 							if(AlphaBetaChess.kingSafe()){
 								// stalemate
@@ -133,6 +158,9 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 							}
 							System.exit(0);
 						}
+					}else{
+						System.out.println("InValid move: " + dragMove);
+						System.out.println(userPossibilities);
 					}
 				} catch (Exception e1) { }
 			}

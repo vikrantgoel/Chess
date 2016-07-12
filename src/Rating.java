@@ -1,13 +1,5 @@
-import java.util.Scanner;
-
 public class Rating {
 	protected static int rating(int moveListLength, int depth){
-		// for testing
-		if (AlphaBetaChess.testing){
-			System.out.print("What is the score: ");
-			Scanner sc = new Scanner(System.in);
-			return sc.nextInt();
-		}
 		int counter = 0;
 		counter += rateAttack();
 		
@@ -88,7 +80,7 @@ public class Rating {
 				counter -= 150000*depth;
 			}
 		}
-		return 0;
+		return counter;
 	}
 	protected static int ratePositional(){
 		return 0;
